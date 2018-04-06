@@ -6,126 +6,131 @@ $(document).infScroll({callBack: function (offset) {
 
 ;(function ($) {
 
-var DEFAULTS = {
+    var DEFAULTS = {
 
-    offset: 50,// offset from top
-    isPercentage: true,// specify if the offset is a percentage
-    callBack: null// function to be called when ever scroll reaches the offset
-};
-
-var clone = function (obj) {
-
-    return JSON.parse(JSON.stringify(obj));
-};
-
-var InfScroll = function (node, options) {
-
-    var $node = $(node);
-
-    this.node = node;
-    this.$node = $node;
-
-    function onScroll () {
-
-        var scrollTop = $node.scrollTop();
-
-        var totalHeight = $(document).height() -$(window).height();
-
-        var offset = options.offset;
-
-        if(options.isPercentage) {
-
-            offset = totalHeight*(offset/100);
-        }
-
-        if(scrollTop >= offset) {
-
-            if (options.isPercentage) {
-
-                scrollTop = (scrollTop/totalHeight)*100;
-            }
-
-            $node.trigger("infscroll.scroll", scrollTop);
-
-            if(options.callBack) {
-
-
-                options.callBack(scrollTop);
-            }
-        }
+        offset: 50,// offset from top
+        isPercentage: true,// specify if the offset is a percentage
+        callBack: null// function to be called when ever scroll reaches the offset
     };
 
-    $node.on("scroll", onScroll);
+    var clone = function (obj) {
 
-    this.destroy = function () {
+        return JSON.parse(JSON.stringify(obj));
+    };
 
-        $node.off("scroll", onScroll);
-    }
-}
+    var InfScroll = function (node, options) {
 
-var infScrollCollection = [];
+        var $node = $(node);
 
-function getInstance (node) {
+        this.node = node;
+        this.$node = $node;
 
-    var instance;
+        function onScroll () {
 
-    $.each(infScrollCollection, function () {
+            var scrollTop = $node.scrollTop();
 
-      if(node === this.node){
+            var totalHeight = $(document).height() -$(window).height();
 
-        instance = this;
-        return false;
-      }
-    });
+            var offset = options.offset;
 
-    return instance;
-}
+            if(options.isPercentage) {
 
-function deleteInstance (node) {
+                offset = totalHeight*(offset/100);
+            }
 
-    var collection = infScrollCollection;
+            if(scrollTop >= offset) {
 
-    $.each(collection, function (index) {
+                if (options.isPercentage) {
 
-      if (node === this.node) {
-
-        var firstPart = collection.slice(0, index),
-            secondPart = collection.slice(index+1, collection.length);
-
-        collection = firstPart.concat(secondPart);
-
-        return false;
-      }
-    });
-
-    return collection;
-}
-
-$.fn.infScroll = function(options) {
-
-    var $nodes = $(this);
-
-    if (options !== "destroy") {
-
-        options = $.extend(clone(DEFAULTS), options);
-    }
-
-    return $.each($nodes, function () {
-
-                if (options === "destroy") {
-
-                    var instance = getInstance(this);
-
-                    if (!instance) {
-
-                        throw Error("No instance exists");
-                    }
-
-                    instance.destroy();
-
-                    deleteInstance(instance);
+                    scrollTop = (scrollTop/totalHeight)*100;
                 }
-               infScrollCollection.push(new InfScroll(this, options));
-           });
-};
-}(jQuery));
+
+                $node.trigger("infscroll.scroll", scrollTop);
+
+                if(options.callBack) {
+
+
+                    options.callBack(scrollTop);
+                }
+            }
+        };
+
+        $node.on("scroll", onScroll);
+
+        this.destroy = function () {
+
+            $node.off("scroll", onScroll);
+        }
+
+        this.reInit = function(){
+
+            $node.off("scroll", onScroll);
+            $node.on("scroll", onScroll);
+        }
+    }
+
+    var infScrollCollection = [];
+
+    function getInstance (node) {
+
+        var instance;
+
+        $.each(infScrollCollection, function () {
+
+          if(node === this.node){
+
+            instance = this;
+            return false;
+          }
+        });
+
+        return instance;
+    }
+
+    function deleteInstance (node) {
+
+        var collection = infScrollCollection;
+
+        $.each(collection, function (index) {
+
+          if (node === this.node) {
+
+            var firstPart = collection.slice(0, index),
+                secondPart = collection.slice(index+1, collection.length);
+
+            collection = firstPart.concat(secondPart);
+
+            return false;
+          }
+        });
+
+        return collection;
+    }
+
+    $.fn.infScroll = function(options) {
+
+        var $nodes = $(this);
+
+        if (options !== "destroy") {
+
+            options = $.extend(clone(DEFAULTS), options);
+        }
+
+        if (options === "destroy") {
+
+            var instance = getInstance(this);
+
+            if (!instance) {
+
+                throw Error("No instance exists");
+            }
+
+            instance.destroy();
+
+            deleteInstance(instance);
+        }
+        var scrollObj = new InfScroll(this, options)
+        infScrollCollection.push(scrollObj);
+        return scrollObj;
+    };
+})(jQuery);
